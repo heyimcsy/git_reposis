@@ -1,25 +1,30 @@
 'use client'
 
 import axios from "axios";
-import {useQuery} from "@tanstack/react-query";
+import { useQuery} from "@tanstack/react-query";
 import {useEffect, useState} from "react";
+import {useSearchStore} from "@/store/useSearchStore";
+
 
 export default function GetData(){
+    const { item } = useSearchStore();
     const [totalCount, setTotalCount] = useState<number>(0);
     const [results, setResults] = useState<any[]>([]);
+
     const getResults = async () => {
-        return await axios.get(`https://api.github.com/search/repositories?q={map}`)
+        return await axios.get(`https://api.github.com/search/repositories?q=${item}`)
     }
     const {data, isSuccess} = useQuery({
-        queryKey:['github'],
+        queryKey:['github', item],
         queryFn: getResults,
+        enabled: !!item,
+        staleTime: 6 * 10 * 1000,
     })
 
     useEffect(():void => {
         if (!isSuccess) return
         setTotalCount(data?.data.total_count)
         setResults(data?.data.items)
-        console.log(results)
     }, [data]);
 
     return (
